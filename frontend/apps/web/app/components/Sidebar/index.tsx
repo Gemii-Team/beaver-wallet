@@ -1,93 +1,122 @@
-import React, { useState } from "react";
-import {
-  Bot,
-  ArrowLeftRight,
-  File,
-  ChevronRight,
-  ChevronLeft,
-} from "lucide-react";
-
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Bot, ArrowLeftRight, File, Menu, X, Info } from "lucide-react";
+import { NavItems } from "./nav";
 interface SidebarProps {
-  isDarkMode: boolean;
-  setIsDarkMode: (isDarkMode: boolean) => void;
   screenWidth: number;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({
-  isDarkMode,
-  setIsDarkMode,
-  screenWidth,
-}) => {
+const Sidebar: React.FC<SidebarProps> = ({ screenWidth }) => {
   const [isExpanded, setIsExpanded] = useState(screenWidth >= 768);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    setIsExpanded(screenWidth >= 768);
+    if (screenWidth >= 768) {
+      setIsMobileSidebarOpen(false);
+    }
+  }, [screenWidth]);
 
   const toggleSidebar = () => {
-    setIsExpanded(!isExpanded);
+    if (screenWidth < 768) {
+      setIsMobileSidebarOpen(!isMobileSidebarOpen);
+    } else {
+      setIsExpanded(!isExpanded);
+    }
   };
 
-  const SidebarItem = ({
-    icon: Icon,
-    label,
-    onClick,
-  }: {
-    icon: React.ElementType;
-    label: string;
-    onClick?: () => void;
-  }) => (
-    <div
-      className="h-14 w-full p-4 flex items-center justify-center rounded-lg cursor-pointer 
-                 hover:text-gray-800 hover:bg-white hover:duration-300 hover:ease-in-out 
-                 focus:bg-white group"
-      onClick={onClick}
-    >
-      <Icon className="h-6 w-6" />
-      {(isExpanded || screenWidth >= 768) && (
-        <span className="ml-4 font-medium group-hover:text-gray-800">
-          {label}
-        </span>
-      )}
-    </div>
-  );
-
   return (
-    <aside
-      className={`h-full flex flex-col items-center relative 
-                  bg-gray-800 text-white duration-300 ease-in-out 
-                  ${isExpanded || screenWidth >= 768 ? "w-48 px-6" : "w-12"}`}
-    >
-      {/* Centered Logo */}
-      <div className="w-full flex justify-center items-center h-16 relative">
-        {isExpanded || screenWidth >= 768 ? (
-            <span className="font-bold text-2xl">Logo</span>
-            ) : (
-            <span className="font-bold text-2xl">L</span>
+    <>
+      <AnimatePresence>
+        {screenWidth < 768 && !isMobileSidebarOpen && (
+          <motion.button
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            exit={{ scale: 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            className="fixed bottom-6 right-6 z-50 bg-primary text-white h-14 w-14 rounded-full shadow-lg flex items-center justify-center focus:outline-none hover:scale-105 transition-transform duration-300"
+            onClick={toggleSidebar}
+          >
+            <Menu className="h-6 w-6" />
+          </motion.button>
         )}
-      </div>
+      </AnimatePresence>
 
-      {/* Centered Navigation Items */}
-      <nav className="flex flex-col space-y-4 w-full items-center justify-center flex-grow">
-        <SidebarItem
-          icon={File}
-          label="Docs"
-          onClick={() => {
-            /* Add navigation logic */
-          }}
+      {/* Sidebar */}
+      <motion.div
+        initial={{ width: screenWidth >= 768 ? "64px" : 0 }}
+        animate={{
+          width:
+            screenWidth < 768
+              ? isMobileSidebarOpen
+                ? "100%"
+                : 0
+              : isExpanded
+                ? "160px"
+                : "64px",
+        }}
+        transition={{ duration: 0.5 }}
+        className={`fixed top-0 left-0 z-50 ${
+          screenWidth < 768 ? "h-full" : "h-[96%] top-4 left-4"
+        } 
+        bg-foreground shadow-2xl rounded-3xl 
+        backdrop-blur-md 
+        flex 
+        flex-col 
+        overflow-hidden`}
+      >
+        <AnimatePresence>
+          {screenWidth < 768 && isMobileSidebarOpen && (
+            <motion.button
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="absolute top-4 right-4 text-background focus:outline-none"
+              onClick={toggleSidebar}
+            >
+              <X className="h-6 w-6" />
+            </motion.button>
+          )}
+        </AnimatePresence>
+
+        <div
+          className={`flex items-center ${
+            isExpanded || isMobileSidebarOpen
+              ? "justify-between p-6"
+              : "justify-center p-4"
+          } mb-6`}
+        >
+          {(isExpanded || isMobileSidebarOpen) && (
+            <motion.span
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="font-bold text-lg text-background"
+            >
+              close
+            </motion.span>
+          )}
+          {screenWidth >= 768 && (
+            <button
+              className="text-background hover:text-primary focus:outline-none"
+              onClick={toggleSidebar}
+            >
+              {isExpanded ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
+            </button>
+          )}
+        </div>
+
+        <NavItems
+          screenWidth={screenWidth}
+          isMobileSidebarOpen={isMobileSidebarOpen}
+          isExpanded={isExpanded}
         />
-        <SidebarItem
-          icon={ArrowLeftRight}
-          label="Swap"
-          onClick={() => {
-            /* Add navigation logic */
-          }}
-        />
-        <SidebarItem
-          icon={Bot}
-          label="Chat"
-          onClick={() => {
-            /* Add navigation logic */
-          }}
-        />
-      </nav>
-    </aside>
+      </motion.div>
+    </>
   );
 };
 

@@ -3,75 +3,76 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
-import HeroSection from "./components/StarBackgroud";
-import { FaChevronCircleUp } from "react-icons/fa";
+import { TypeAnimation } from "react-type-animation";
 
 const Navbar = () => {
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const [isAsideExpanded, setIsAsideExpanded] = useState(false);
   const [screenWidth, setScreenWidth] = useState(0);
-  const [showScrollToTop, setShowScrollToTop] = useState(false);
 
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    document.documentElement.classList.toggle("dark");
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+
+  const toggleTheme = () => {
+    const newTheme = theme === "light" ? "dark" : "light";
+    setTheme(newTheme);
+    document.body.className = newTheme;
   };
 
   useEffect(() => {
-    if (
-      localStorage.theme === "dark" ||
-      (!("theme" in localStorage) &&
-        window.matchMedia("(prefers-color-scheme: dark)").matches)
-    ) {
-      setIsDarkMode(true);
-      document.documentElement.classList.add("dark");
-    } else {
-      setIsDarkMode(false);
-      document.documentElement.classList.remove("dark");
-    }
+    const savedTheme = localStorage.getItem("theme") || "light";
+    setTheme(savedTheme as "light" | "dark");
+    document.body.className = savedTheme;
 
     const handleResize = () => {
       setScreenWidth(window.innerWidth);
     };
-
-    const handleScroll = () => {
-      if (window.scrollY > 300) {
-        setShowScrollToTop(true);
-      } else {
-        setShowScrollToTop(false);
-      }
-    };
-
     window.addEventListener("resize", handleResize);
-    window.addEventListener("scroll", handleScroll);
     handleResize();
+  }, [screenWidth]);
 
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
-
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  useEffect(() => {
+    localStorage.setItem("theme", theme);
+  }, [theme]);
 
   return (
-    <div className="h-screen w-full bg-white relative flex overflow-hidden dark:bg-gray-800">
-      <Sidebar
-        isDarkMode={isDarkMode}
-        setIsDarkMode={setIsDarkMode}
-        screenWidth={screenWidth}
-      />
-
-      <div className="w-full h-full flex flex-col justify-between">
-        <Header />
-
+    <div className="relative h-screen w-screen bg-gray-100">
+      <Sidebar screenWidth={screenWidth} />
+      <div className="w-full h-full relative justify-between">
+        <Header toggleTheme={toggleTheme} theme={theme} />
         <main className="max-w-full h-full flex relative overflow-y-hidden">
           <div className="h-full w-full flex flex-wrap items-start justify-start rounded-tl grid-flow-col auto-cols-max gap-4 overflow-y-scroll dark:bg-gray-800">
-            {/* Hero Section */}
-            <div className="relative w-full h-screen bg-gradient-to-b from-blue-900 to-gray-800 text-white flex flex-col justify-center items-center text-center">
-              <h1 className="text-4xl md:text-6xl font-bold">Section 1</h1>
+            <div className="relative w-full h-screen bg-gradient-animated text-white flex flex-col justify-center items-center text-center">
+              <div className="relative z-10">
+                <div className="flex flex-col items-center justify-center">
+                  <h1 className="flex text-4xl md:text-6xl font-bold mb-4">
+                    Welcome to{" "}
+                  </h1>
+                  <h2 className=" flex text-center text-4xl md:text-6xl font-bold mb-4">
+                    <TypeAnimation
+                      sequence={[
+                        "Beaver",
+                        1000,
+                        "턱수염 을 기른 사람",
+                        1000,
+                        "ਬੀਵਰ",
+                        1000,
+                        "บีเวอร์",
+                        1000,
+                        "Бобр",
+                        1000,
+                      ]}
+                      wrapper="span"
+                      speed={50}
+                      style={{ fontSize: "3.75rem", display: "inline-block" }}
+                      repeat={Infinity}
+                    />
+                  </h2>
+                </div>
+                <h2 className="text-center text-lg md:text-2xl">
+                  🚀 Trade Bitcoin like chatting with a friend.
+                </h2>
+                <button className="mt-8 px-6 py-3 bg-purple-500 hover:bg-purple-600 rounded-lg text-lg font-semibold shadow-lg transform transition hover:scale-105">
+                  Get Started
+                </button>
+              </div>
             </div>
 
             <section className="py-16 bg-white dark:bg-gray-800 w-full">
